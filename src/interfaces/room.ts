@@ -41,7 +41,7 @@ export class PlayerMeta {
     }
 
     resetInk() {
-        this.ink = 500;
+        this.ink = 300;
     }
 }
 
@@ -60,7 +60,7 @@ export class Room {
     playerMeta: Map<Player, PlayerMeta>;
     status: number;
     word: string;
-    canvas: CanvasItem[]
+    canvas: {[id: string]: CanvasItem[]};
 
     constructor(io: SocketIO.Server) {
         this.id = genRoomName();
@@ -68,13 +68,14 @@ export class Room {
         this.status = STATUS.LOBBY;
         this.playerMeta = new Map();
         this.io = io;
-        this.canvas = [];
+        this.canvas = {};
         this.title = "Draw something cool while we wait!"
     }
 
     addPlayer(player: Player) {
         this.players.push(player);
         this.playerMeta.set(player, new PlayerMeta());
+        this.canvas[player.id] = [];
         this.io.in(this.id).emit("updatePlayers", this.players);
         this.io.in(player.id).emit("updateCanvas", this.canvas);
         this.io.in(this.id).emit("message", `${player.name} has joined the game.`);
@@ -110,8 +111,8 @@ export class Room {
      * Add a canvas item to the canvas list.
      * @param item Canvas item to add
      */
-    addCanvasItem(item: CanvasItem) {
-        this.canvas.push(item);
+    addCanvasItem(playerId: string, item: CanvasItem) {
+        this.canvas[playerId].push(item);
         this.io.in(this.id).emit("updateCanvas", this.canvas);
     }
 
@@ -161,7 +162,7 @@ export class Room {
         let plyMeta = this.playerMeta.get(artist);
         plyMeta.canDraw = true;
         plyMeta.resetInk();
-        this.io.to(this.id).emit("updateInk", `${plyMeta.ink / 5}%`);
+        this.io.to(this.id).emit("updateInk", `${plyMeta.ink / 3}%`);
         this.setTitle(`${artist.name}'s turn to draw!`);
     }
 
@@ -180,6 +181,8 @@ export class Room {
         this.players.forEach(player => {
             player.votes = [];
         });
+        this.io.to(this.id).emit("updatePlayers", this.players);
+        this.io.to(this.id).emit("message", `The word was: ${this.word}`);
     }
 
     /**
@@ -202,7 +205,10 @@ export class Room {
     }
 
     clearCanvas() {
-        this.canvas = [];
+        this.canvas = {};
+        this.players.forEach(player => {
+            this.canvas[player.id] = [];
+        });
         this.io.in(this.id).emit("updateCanvas", this.canvas);
     }
 }

@@ -51,25 +51,29 @@
                 }
                 socket.emit("joinRoom", info);
             });
-            socket.on("updateCanvas", function(canvasList) {
+            socket.on("updateCanvas", function(canvasMap) {
+                console.log(canvasMap);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let item of canvasList) {
-                    switch(item.type) {
-                        case "mousedown":
-                            ctx.strokeStyle = item.color;
-                            ctx.moveTo(item.x, item.y);
-                            ctx.beginPath();
-                            break;
-                        case "mousemove":
-                            ctx.lineTo(item.x, item.y);
-                            ctx.stroke();
-                            break;
-                        case "mouseup":
-                            ctx.closePath();
-                            ctx.moveTo(item.x, item.y);
-                            break;
+                for (let key in canvasMap) {
+                    for (let item of canvasMap[key]) {
+                        switch(item.type) {
+                            case "mousedown":
+                                ctx.strokeStyle = item.color;
+                                ctx.moveTo(item.x, item.y);
+                                ctx.beginPath();
+                                break;
+                            case "mousemove":
+                                ctx.lineTo(item.x, item.y);
+                                ctx.stroke();
+                                break;
+                            case "mouseup":
+                                ctx.closePath();
+                                ctx.moveTo(item.x, item.y);
+                                break;
+                        }
                     }
                 }
+                
             });
             socket.on("roomJoined", function() {
                 canvas.addEventListener("mousedown", function(e) {

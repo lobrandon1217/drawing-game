@@ -41,5 +41,5 @@ app.get("/rooms/:room", function(req, res, next) {
 });
 
 server.listen(80, function() {
-    console.log("Listening on 80");
+    console.log("Listening on 7121");
 });

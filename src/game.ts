@@ -58,7 +58,7 @@ export function bindIo(io: SocketIO.Server) {
             meta.isDrawing = true;
             meta.x = x;
             meta.y = y;
-            room.addCanvasItem({
+            room.addCanvasItem(player.id, {
                 color: player.color,
                 type: "mousedown",
                 x: x,
@@ -69,7 +69,7 @@ export function bindIo(io: SocketIO.Server) {
             if (room.status == STATUS.SPY_GUESSING) return;
             let x = pos.x, y = pos.y;
             room.playerMeta.get(player).isDrawing = false;
-            room.addCanvasItem({
+            room.addCanvasItem(player.id, {
                 color: player.color,
                 type: "mouseup",
                 x: x,
@@ -91,11 +91,11 @@ export function bindIo(io: SocketIO.Server) {
             if (meta.ink > 0 && (room.status == STATUS.LOBBY || (meta.isDrawing && meta.canDraw))) {
                 meta.subtractInk(dist);
                 if (room.status == STATUS.LOBBY) {
-                    socket.emit("updateInk", `${meta.ink / 5}%`);
+                    socket.emit("updateInk", `${meta.ink / 3}%`);
                 } else {
-                    io.to(room.id).emit("updateInk", `${meta.ink / 5}%`);
+                    io.to(room.id).emit("updateInk", `${meta.ink / 3}%`);
                 }
-                room.addCanvasItem({
+                room.addCanvasItem(player.id, {
                     color: player.color,
                     type: "mousemove",
                     x: x,
