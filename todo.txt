@@ -1,0 +1,5 @@
+Canvas mousedown, mouseup, mousedrag events should send coordinates to the server,
+the server should determine whether or not it gets drawn
+then it sends an update canvas message with the new canvas data
+
+to be determined
