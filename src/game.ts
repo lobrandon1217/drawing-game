@@ -106,7 +106,7 @@ export function bindIo(io: SocketIO.Server) {
         socket.on("startGame", function() {
             if (room.status != STATUS.LOBBY) {
                 return socket.emit("message", "Stop that.");
-            } else if (room.players.length < -1) {
+            } else if (room.players.length < 3) {
                 return socket.emit("message", "Cannot start the game, you need at least 3 players.");
             }
             io.to(room.id).emit("startGame");
