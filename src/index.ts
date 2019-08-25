@@ -40,6 +40,6 @@ app.get("/rooms/:room", function(req, res, next) {
     });
 });
 
-server.listen(80, function() {
+server.listen(7121, function() {
     console.log("Listening on 7121");
 });
