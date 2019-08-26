@@ -3,8 +3,11 @@
     <body>
         <div class="container">
             <div class="row pt-4">
-                <div class="col-12">
+                <div class="col">
                     <h4 id="title">DRAW.YNJN.IO</h4>
+                </div>
+                <div class="col-auto">
+                    <h4 id="time">0:00</h4>
                 </div>
                 <div class="col-12 d-flex flex-column" id="canvasCol">
                     <div class="border w-100 bg-dark border-dark mt-1" style="height: 20px;">
@@ -119,6 +122,9 @@
                         document.querySelector("#startGame").classList.add("collapse");
                         break;
                 }
+            });
+            socket.on("time", function(timeString) {
+                document.querySelector("#time").textContent = timeString;
             })
             socket.on("title", function(data) {
                 document.querySelector("#title").textContent = data;

@@ -61,6 +61,8 @@ export class Room {
     status: number;
     word: string;
     canvas: {[id: string]: CanvasItem[]};
+    time: number;
+    timer: NodeJS.Timeout;
 
     constructor(io: SocketIO.Server) {
         this.id = genRoomName();
@@ -70,6 +72,8 @@ export class Room {
         this.io = io;
         this.canvas = {};
         this.title = "Draw something cool while we wait!"
+        this.time = 0;
+        this.timer = null;
     }
 
     addPlayer(player: Player) {
@@ -153,7 +157,36 @@ export class Room {
         this.setSpy(spy);
         // Generate the word and send it to everybody
         this.genWord();
-    } 
+        // Start timer
+        this.startTimer();
+    }
+
+    startTimer() {
+        this.time = 60 * 6;
+        this.emitTime();
+        this.timer = setInterval(() => {
+            this.time -= 1;
+            this.emitTime();
+            if (this.time > 0) return;
+            this.endTimer();
+            if (this.status != STATUS.IN_PROGRESS) return;
+            // spy wins for outliving
+            let curSpy = this.players.find(player => this.playerMeta.get(player).isSpy);
+            this.io.to(this.id).emit("message", `Time's up! ${curSpy.name} wins!`);
+            this.endGame();
+        }, 1000);
+    }
+
+    endTimer() {
+        clearInterval(this.timer);
+        this.io.to(this.id).emit("time", "0:00");
+    }
+
+    emitTime() {
+        let minutes = Math.floor(this.time / 60);
+        let seconds = this.time % 60;
+        this.io.to(this.id).emit("time", `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`);
+    }
 
     setArtist(artist: Player) {
         this.playerMeta.forEach(function(meta, player) {
@@ -177,9 +210,11 @@ export class Room {
         // end the game, back to lobby.
         this.clearCanvas();
         this.setStatus(STATUS.LOBBY);
+        this.endTimer();
         this.setTitle("Draw something cool while we wait!");
         this.players.forEach(player => {
             player.votes = [];
+            this.playerMeta.get(player).canDraw = true;
         });
         this.io.to(this.id).emit("updatePlayers", this.players);
         this.io.to(this.id).emit("message", `The word was: ${this.word}`);

@@ -75,7 +75,7 @@ export function bindIo(io: SocketIO.Server) {
                 x: x,
                 y: y
             });
-            if (room.playerMeta.get(player).canDraw) {
+            if (room.playerMeta.get(player).canDraw && room.status == STATUS.IN_PROGRESS) {
                 room.nextTurn();
             }
         });
@@ -135,6 +135,12 @@ export function bindIo(io: SocketIO.Server) {
                     } else {
                         io.to(room.id).emit("message", `Real artists win!`);
                     }
+                    room.endGame();
+                }
+            } else if (room.status == STATUS.IN_PROGRESS && socket.id == curSpy.id) {
+                let similarity = stringSimilarity.compareTwoStrings(room.word, message);
+                if (similarity >= 0.75) {
+                    io.to(room.id).emit("message", `${curSpy.name} has guessed the word!`);
                     room.endGame();
                 }
             }
