@@ -103,6 +103,17 @@ export function bindIo(io: SocketIO.Server) {
                 });
             }
         });
+        socket.on("mouseleave", function() {
+            if (room.status == STATUS.SPY_GUESSING) return;
+            let meta = room.playerMeta.get(player);
+            meta.isDrawing = false;
+            room.addCanvasItem(player.id, {
+                color: player.color,
+                type: "mouseup",
+                x: meta.x,
+                y: meta.y
+            });
+        });
         socket.on("startGame", function() {
             if (room.status != STATUS.LOBBY) {
                 return socket.emit("message", "Stop that.");
@@ -114,8 +125,8 @@ export function bindIo(io: SocketIO.Server) {
         });
         socket.on("message", function(message) {
             io.to(room.id).emit("message", `${player.name}: ${message}`);
+            let curSpy = room.players.find(player => room.playerMeta.get(player).isSpy);
             if (room.status == STATUS.SPY_GUESSING) {
-                let curSpy = room.players.find(player => room.playerMeta.get(player).isSpy);
                 if (socket.id == curSpy.id) {
                     // this message needs to be compared
                     let similarity = stringSimilarity.compareTwoStrings(room.word, message);

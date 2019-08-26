@@ -97,6 +97,9 @@
                     let canvasY = mouseY * canvas.height / canvas.clientHeight;
                     socket.emit("mouseup", {x: canvasX, y: canvasY});
                 });
+                canvas.addEventListener("mouseleave", function(e) {
+                    socket.emit("mouseleave");
+                });
             });
             socket.on("updatePlayers", updatePlayers);
             socket.on("message", newMessage);
@@ -139,9 +142,6 @@
                 let elem = document.querySelector("#players div");
                 elem.innerHTML = "";
                 for (let player of list) {
-                    // <a href="#" class="list-group-item list-group-item-action active">
-                            // Cras justo odio
-                            // </a>
                     let playerElem = document.createElement("a");
                     playerElem.setAttribute("data-vote", player.id);
                     playerElem.classList.add("list-group-item", "list-group-item-action", "d-flex");
