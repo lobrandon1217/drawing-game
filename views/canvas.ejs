@@ -55,7 +55,6 @@
                 socket.emit("joinRoom", info);
             });
             socket.on("updateCanvas", function(canvasMap) {
-                console.log(canvasMap);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 for (let key in canvasMap) {
                     for (let item of canvasMap[key]) {

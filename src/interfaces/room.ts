@@ -197,6 +197,7 @@ export class Room {
         plyMeta.resetInk();
         this.io.to(this.id).emit("updateInk", `${plyMeta.ink / 3}%`);
         this.setTitle(`${artist.name}'s turn to draw!`);
+        this.io.to(this.id).emit("message", `${artist.name}'s turn to draw!`);
     }
 
     setSpy(spy: Player) {

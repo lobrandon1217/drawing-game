@@ -106,6 +106,7 @@ export function bindIo(io: SocketIO.Server) {
         socket.on("mouseleave", function() {
             if (room.status == STATUS.SPY_GUESSING) return;
             let meta = room.playerMeta.get(player);
+            if (meta.isDrawing) return;
             meta.isDrawing = false;
             room.addCanvasItem(player.id, {
                 color: player.color,
@@ -113,6 +114,9 @@ export function bindIo(io: SocketIO.Server) {
                 x: meta.x,
                 y: meta.y
             });
+            if (room.playerMeta.get(player).canDraw && room.status == STATUS.IN_PROGRESS) {
+                room.nextTurn();
+            }
         });
         socket.on("startGame", function() {
             if (room.status != STATUS.LOBBY) {
@@ -133,7 +137,11 @@ export function bindIo(io: SocketIO.Server) {
                     if (similarity >= 0.85) {
                         io.to(room.id).emit("message", `${curSpy.name} wins!`);
                     } else {
-                        io.to(room.id).emit("message", `Real artists win!`);
+                        let winners = [];
+                        curSpy.votes.forEach(id => {
+                            winners.push(room.players.find(player => player.id == id).name);
+                        });
+                        io.to(room.id).emit("message", `${winners.join(", ")} wins!`);
                     }
                     room.endGame();
                 }
