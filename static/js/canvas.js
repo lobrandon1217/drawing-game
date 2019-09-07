@@ -104,11 +104,10 @@ function updatePlayers(list) {
     for (let player of list) {
         let playerElem = document.createElement("a");
         playerElem.setAttribute("data-vote", player.id);
-        playerElem.classList.add("list-group-item", "list-group-item-action", "d-flex");
-        playerElem.innerHTML = `<div class="rounded-circle d-inline-block mr-2"
-            style="background:${player.color};width:1.5em;height:1.5em;"></div>
-            ${player.name}
-            <div class="ml-auto">${player.votes.length} vote${player.votes.length == 1 ? "" : "s"}</div>`;
+        playerElem.classList.add("list-group-item", "list-group-item-action", "d-flex", "row", "no-gutters");
+        playerElem.style.borderLeft = `6px solid ${player.color}`;
+        playerElem.innerHTML = `<div class="col">${player.name}</div>
+            <div class="col text-right">${player.votes.length} vote${player.votes.length == 1 ? "" : "s"}</div>`;
         elem.appendChild(playerElem);
     }
 }
