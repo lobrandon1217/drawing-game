@@ -168,8 +168,8 @@ export function bindIo(io: SocketIO.Server) {
         });
         socket.on("vote", function (id) {
             console.log(`${socket.id} wants to vote on ${id}`);
-            if (id == socket.id) return socket.emit("message", "You cannot vote for yourself.");
             if (room.status != STATUS.IN_PROGRESS) return socket.emit("message", "Cannot vote in the lobby.");
+            if (id == socket.id) return socket.emit("message", "You cannot vote for yourself.");
             let currentVoted = room.players.find(player => player.votes.indexOf(socket.id) > -1);
             if (currentVoted) {
                 currentVoted.votes.splice(currentVoted.votes.indexOf(socket.id), 1);

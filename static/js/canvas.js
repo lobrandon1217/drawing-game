@@ -131,6 +131,9 @@ function updatePlayers(list) {
         playerElem.style.borderLeft = `6px solid ${player.color}`;
         playerElem.innerHTML = `<div class="col">${player.name}</div>
             <div class="col text-right">${player.votes.length} vote${player.votes.length == 1 ? "" : "s"}</div>`;
+        playerElem.addEventListener("click", function(e) {
+            socket.emit("vote", this.getAttribute("data-vote"));
+        });
         elem.appendChild(playerElem);
     }
 }
@@ -147,6 +150,3 @@ function newMessage(message) {
         top: messages.scrollHeight
     });
 }
-document.querySelector("#players div").addEventListener("click", function (e) {
-    socket.emit("vote", e.target.getAttribute("data-vote"));
-});
