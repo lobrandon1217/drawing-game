@@ -26,20 +26,30 @@ export function bindIo(io: SocketIO.Server) {
         var room: Room = null;
         console.log(`Connection from ${socket.id}`);
         socket.on("joinRoom", function(data) {
-            console.log(`${data.name} is attempting to join ${data.room}`);
+            console.log(`A user is attempting to join ${data.room}`);
             if (player || room) return socket.disconnect();
-            if (!(data.room in rooms)) return socket.disconnect();
-            let newPlayer = new Player(data.name, socket.id);
-            player = newPlayer;
+            if (!(data.room in rooms) || !rooms[data.room]) return socket.disconnect();
             room = rooms[data.room];
             socket.join(room.id);
-            room.addPlayer(newPlayer);
             socket.emit("roomJoined");
             socket.emit("title", room.title);
             socket.emit("status", room.status);
         });
+        socket.on("identify", function(name) {
+            console.log(`Socket id '${socket.id}' trying to identify as '${name}'`);
+            if (player || !room) return socket.disconnect();
+            // TODO probably like check the validity of the username or something
+            if (room.players.find(player => player.name.toLowerCase() === name.toLowerCase())) {
+                return socket.emit("usernamePrompt", "That name is already taken.");
+            }
+            let newPlayer = new Player(name, socket.id);
+            player = newPlayer;
+            room.addPlayer(newPlayer);
+            socket.emit("identified");
+        });
         socket.on("disconnecting", function(reason) {
             console.log(`${socket.id} socket disconnect: ${reason}`);
+            if (!player || !room) return;
             for (let id of Object.keys(socket.rooms)) {
                 let room = rooms[id];
                 if (!room) continue;
@@ -106,7 +116,7 @@ export function bindIo(io: SocketIO.Server) {
         socket.on("mouseleave", function() {
             if (room.status == STATUS.SPY_GUESSING) return;
             let meta = room.playerMeta.get(player);
-            if (meta.isDrawing) return;
+            if (!meta.isDrawing) return;
             meta.isDrawing = false;
             room.addCanvasItem(player.id, {
                 color: player.color,

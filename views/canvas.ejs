@@ -1,5 +1,7 @@
 <html>
     <% include partials/head %>
+    <% include partials/leavegame %>
+    <% include partials/usernameprompt %>
     <body>
         <div class="container">
             <div class="row pt-4">
@@ -16,6 +18,10 @@
                     <canvas class="rounded border border-secondary" width="500" height="500"></canvas>
                 </div>
                 <div class="col-12 mb-1 p-2 text-center">
+                    <button data-toggle="modal" data-target="#leaveModal"
+                            href="/" class="btn btn-outline-danger">
+                        Leave Game
+                    </button>
                     <button class="btn btn-outline-primary" id="startGame">Start Game</button>
                     <button class="btn btn-outline-success collapse" id="endTurn">End Turn</button>
                 </div>
@@ -41,7 +47,6 @@
         <script src="/socket.io.js"></script>
         <script>
             const room = "<%= room %>";
-            const name = prompt("Enter a username");
         </script>
         <script src="/js/canvas.js"></script>
     </body>
