@@ -7,7 +7,7 @@ import * as stringSimilarity from "string-similarity";
  * Information to keep
  */
 var boundIo: SocketIO.Server;
-export const rooms: {[id: string]: Room} = {};
+export const rooms: { [id: string]: Room } = {};
 
 /**
  * Creates a room
@@ -21,11 +21,11 @@ export function createRoom(): Room {
 
 export function bindIo(io: SocketIO.Server) {
     boundIo = io;
-    io.on("connection", function(socket) {
+    io.on("connection", function (socket) {
         var player: Player = null;
         var room: Room = null;
         console.log(`Connection from ${socket.id}`);
-        socket.on("joinRoom", function(data) {
+        socket.on("joinRoom", function (data) {
             console.log(`A user is attempting to join ${data.room}`);
             if (player || room) return socket.disconnect();
             if (!(data.room in rooms) || !rooms[data.room]) return socket.disconnect();
@@ -35,10 +35,13 @@ export function bindIo(io: SocketIO.Server) {
             socket.emit("title", room.title);
             socket.emit("status", room.status);
         });
-        socket.on("identify", function(name) {
+        socket.on("identify", function (name) {
             console.log(`Socket id '${socket.id}' trying to identify as '${name}'`);
             if (player || !room) return socket.disconnect();
-            // TODO probably like check the validity of the username or something
+            if (!utils.validateUsername(name)) {
+                return socket.emit("usernamePrompt",
+                    "Invalid username. 3 - 12 alphanumeric characters only.");
+            }
             if (room.players.find(player => player.name.toLowerCase() === name.toLowerCase())) {
                 return socket.emit("usernamePrompt", "That name is already taken.");
             }
@@ -47,7 +50,7 @@ export function bindIo(io: SocketIO.Server) {
             room.addPlayer(newPlayer);
             socket.emit("identified");
         });
-        socket.on("disconnecting", function(reason) {
+        socket.on("disconnecting", function (reason) {
             console.log(`${socket.id} socket disconnect: ${reason}`);
             if (!player || !room) return;
             for (let id of Object.keys(socket.rooms)) {
@@ -61,7 +64,7 @@ export function bindIo(io: SocketIO.Server) {
         });
 
         // Drawing events
-        socket.on("mousedown", function(pos) {
+        socket.on("mousedown", function (pos) {
             if (room.status == STATUS.SPY_GUESSING) return;
             let x = pos.x, y = pos.y;
             let meta = room.playerMeta.get(player);
@@ -75,7 +78,7 @@ export function bindIo(io: SocketIO.Server) {
                 y: y
             });
         });
-        socket.on("mouseup", function(pos) {
+        socket.on("mouseup", function (pos) {
             if (room.status == STATUS.SPY_GUESSING) return;
             let x = pos.x, y = pos.y;
             room.playerMeta.get(player).isDrawing = false;
@@ -89,7 +92,7 @@ export function bindIo(io: SocketIO.Server) {
                 room.nextTurn();
             }
         });
-        socket.on("mousemove", function(pos) {
+        socket.on("mousemove", function (pos) {
             if (room.status == STATUS.SPY_GUESSING) return;
             let meta = room.playerMeta.get(player);
             if (!meta.isDrawing) return;
@@ -113,7 +116,7 @@ export function bindIo(io: SocketIO.Server) {
                 });
             }
         });
-        socket.on("mouseleave", function() {
+        socket.on("mouseleave", function () {
             if (room.status == STATUS.SPY_GUESSING) return;
             let meta = room.playerMeta.get(player);
             if (!meta.isDrawing) return;
@@ -128,7 +131,7 @@ export function bindIo(io: SocketIO.Server) {
                 room.nextTurn();
             }
         });
-        socket.on("startGame", function() {
+        socket.on("startGame", function () {
             if (room.status != STATUS.LOBBY) {
                 return socket.emit("message", "Stop that.");
             } else if (room.players.length < 3) {
@@ -137,7 +140,7 @@ export function bindIo(io: SocketIO.Server) {
             io.to(room.id).emit("startGame");
             room.startGame();
         });
-        socket.on("message", function(message) {
+        socket.on("message", function (message) {
             io.to(room.id).emit("message", `${player.name}: ${message}`);
             let curSpy = room.players.find(player => room.playerMeta.get(player).isSpy);
             if (room.status == STATUS.SPY_GUESSING) {
@@ -163,7 +166,7 @@ export function bindIo(io: SocketIO.Server) {
                 }
             }
         });
-        socket.on("vote", function(id) {
+        socket.on("vote", function (id) {
             console.log(`${socket.id} wants to vote on ${id}`);
             if (id == socket.id) return socket.emit("message", "You cannot vote for yourself.");
             if (room.status != STATUS.IN_PROGRESS) return socket.emit("message", "Cannot vote in the lobby.");

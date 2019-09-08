@@ -25,3 +25,12 @@ export function genColor(): string {
     }
     return result;
 }
+
+/**
+ * Check if a username is valid or not
+ * @param name Name to check
+ * @returns true if it is valid.
+ */
+export function validateUsername(name: string): boolean {
+    return name.search(/^\w{3,12}$/) > -1;
+}
