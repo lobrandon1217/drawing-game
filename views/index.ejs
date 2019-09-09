@@ -1,18 +1,19 @@
 <html>
     <% include partials/head %>
+    <% include partials/roomcodeprompt %>
     <body>
         <div class="container pt-4">
             <h3>draw.ynjn.io</h3>
             <p>
                 <a href="/new_room" class="btn btn-outline-success">Create a new game</a> or
-                <a href="#" id="join" class="btn btn-outline-primary">Join a game</a>
+                <button data-toggle="modal" data-target="#roomPrompt" class="btn btn-outline-primary">Join a game</button>
             </p>
         </div>
 
         <script>
-            document.querySelector("#join").addEventListener("click", function(e) {
-                let id = prompt("Enter room ID");
-                window.location.href = `/rooms/${id}`;
+            $("#roomPrompt").submit(function (e) {
+                e.preventDefault();
+                window.location.href = "/rooms/" + $("#roomPrompt input[name='code']").val();
             });
         </script>
     </body>
